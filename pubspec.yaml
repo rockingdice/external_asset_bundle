@@ -1,14 +1,14 @@
 name: external_asset_bundle
 description: An AssetBundle that loads resources from an external folder outside the bundle. Use it like rootBundle or DefaultAssetBundle.
-version: 0.0.1
-homepage:
+version: 1.0.0
+homepage: https://github.com/rockingdice/external_asset_bundle
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
   flutter: ">=1.17.0"
 
 dependencies:
-  path: any
+  path: ^1.8.0
   flutter:
     sdk: flutter
 
