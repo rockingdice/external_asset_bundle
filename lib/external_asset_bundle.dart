@@ -7,9 +7,9 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path;
 
 class ExternalAssetBundle implements AssetBundle {
-  String _path;
+  late String _path;
   Map<String, dynamic> _cache = {};
-  bool _enableBinaryCache;
+  late bool _enableBinaryCache;
 
   ExternalAssetBundle(String path,
       {bool enableBinaryCache = false}) {
