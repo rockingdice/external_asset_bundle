@@ -1,6 +1,6 @@
 name: external_asset_bundle
 description: An AssetBundle that loads resources from an external folder outside the bundle. Use it like rootBundle or DefaultAssetBundle.
-version: 1.0.1
+version: 1.0.2
 homepage: https://github.com/rockingdice/external_asset_bundle
 
 environment:
@@ -13,8 +13,8 @@ dependencies:
     sdk: flutter
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
+  # flutter_test:
+  #   sdk: flutter
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

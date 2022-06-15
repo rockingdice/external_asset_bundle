@@ -66,7 +66,7 @@ The resources could be cached by initializing the `ExternalAssetBundle` with the
 var externalAssetBundle = ExternalAssetBundle("path", enableBinaryCache:true);
 ```
 
-But `loadString` will use its own `cache` paramter to determine whether to use the caching.
+But `loadString` will use its own `cache` parameter to determine whether to use the caching.
 
 ## Contribution
 
