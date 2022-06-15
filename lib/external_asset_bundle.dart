@@ -11,8 +11,7 @@ class ExternalAssetBundle implements AssetBundle {
   Map<String, dynamic> _cache = {};
   late bool _enableBinaryCache;
 
-  ExternalAssetBundle(String path,
-      {bool enableBinaryCache = false}) {
+  ExternalAssetBundle(String path, {bool enableBinaryCache = false}) {
     if (!path.endsWith('/')) {
       path += '/';
     }
@@ -102,5 +101,10 @@ class ExternalAssetBundle implements AssetBundle {
     } catch (err, stack) {
       throw err;
     }
+  }
+
+  @override
+  void clear() {
+    _cache.clear();
   }
 }
