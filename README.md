@@ -1,55 +1,52 @@
 # External Asset Bundle
 
-The External Asset Bundle package works exactly like a `rootBundle` or `DefaultAssetBundle`, but loads resources from an external location like the application or library path. It also implements caching for resource loading.
+The External Asset Bundle package works exactly like a `rootBundle` or `DefaultAssetBundle`, 
+but loads resources from an external location, like the application or library path. It also 
+implements caching for resource loading.
 
-It's very useful if you want to use resources from a folder that is temporary or located on external storage.
+It's useful when you want to use resources from a folder, that is temporary or located on external
+storage.
 
-You can use `Image.asset` to create an `Image` instance as the default bundle does:
+Use `Image.asset` to create an `Image` instance as the default bundle does:
 ```dart
-var externalAssetBundle = ExternalAssetBundle("download/folder/assets");
-var image = Image.asset(
+final externalAssetBundle = ExternalAssetBundle("download/folder/assets");
+final image = Image.asset(
       "sample.png",
       bundle: externalAssetBundle,	//Don't forget to use your own AssetBundle!
     );
 ```
 
-Or load a string file from the path very easily:
+Or load a string file from bundle:
 ```dart
-var stringContent = externalAssetBundle.loadString("some-text-file.txt");
+final stringContent = externalAssetBundle.loadString("some-text-file.txt");
 ```
 
-The `ExternalAssetBundle` implements the abstract class of `AssetBundle`, so it should work every place that needs an `AssetBundle`.
+Since `ExternalAssetBundle` implements `AssetBundle`, it can be used whenever `AssetBundle` is 
+needed.
 
-Additionaly, you won't need to predefine your folder structure in the `pubspec.yaml` file. The folder structure is obtained dynamically. But you still need to follow the rules for constructing the default assets folder. 
+There is no need to predefine your folder structure in the `pubspec.yaml` file. But you still need
+to follow the rules for constructing the default assets folder. 
 
 Read more: [Assets and Images](https://flutter.dev/docs/development/ui/assets-and-images)
 
-## Installation
-
-Add external_asset_bundle as dependency to your pubspec file.
-
-```
-external_asset_bundle: 1.0.0
-```
-
 ## Usage
 
-### Initialization
-The only thing you need to do is to create an `ExternalAssetBundle` instance:
+Before using asset bundle initialize it with selected path:
+
 ```dart
 import 'package:external_asset_bundle/external_asset_bundle.dart';
 
-var externalAssetBundle = ExternalAssetBundle("path/to/any/folder");
+final externalAssetBundle = ExternalAssetBundle("path/to/any/folder");
 ```
 
-### Use it!
-You can use it as any AssetBundle:
+From this moment ```externalAssetBundle``` can be used as any ```AssetBundle```:
+
 ```dart
-var image = Image.asset(
+final image = Image.asset(
       "sample.png",
       bundle: externalAssetBundle,
     );
-var stringContent = externalAssetBundle.loadString("some-text-file.txt");
+final stringContent = externalAssetBundle.loadString("some-text-file.txt");
 ```
 
 If you manage your folder structure like this:
@@ -61,13 +58,20 @@ asset-folder/3.0x/sample.png
 The variant could be correctly found by `Image.asset`.
 
 ### Caching
-The resources could be cached by initializing the `ExternalAssetBundle` with the `enableBinaryCache`  parameter on:
+
+The resources could be cached by initializing the `ExternalAssetBundle` with the `enableBinaryCache`
+parameter on:
 ```dart
-var externalAssetBundle = ExternalAssetBundle("path", enableBinaryCache:true);
+final externalAssetBundle = ExternalAssetBundle("path", enableBinaryCache: true);
 ```
 
-But `loadString` will use its own `cache` parameter to determine whether to use the caching.
+Keep in mind that `loadString` will check cache only if ```cache``` argument is set to true while 
+calling method. Otherwise it will always load file.
 
-## Contribution
+## Contributors
+Owner [RockingDice](https://github.com/rockingdice)
+[Toster](https://github.com/thetoster)
+
+## Bug reports
 
 Please report issues on my Github page! 
