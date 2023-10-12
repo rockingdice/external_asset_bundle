@@ -1,110 +1,99 @@
 library external_asset_bundle;
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
-import 'package:path/path.dart' as path;
+import 'package:path/path.dart' as pathPkg;
 
 class ExternalAssetBundle implements AssetBundle {
-  late String _path;
-  Map<String, dynamic> _cache = {};
-  late bool _enableBinaryCache;
+  final String path;
+  final Map<String, dynamic> _cache = <String, dynamic>{};
+  final bool enableBinaryCache;
 
-  ExternalAssetBundle(String path, {bool enableBinaryCache = false}) {
-    if (!path.endsWith('/')) {
-      path += '/';
-    }
-    _path = path;
-    _enableBinaryCache = enableBinaryCache;
-  }
+  ExternalAssetBundle(this.path, {this.enableBinaryCache = false});
 
   @override
-  void evict(String key) {
-    _cache.remove(key);
-  }
+  void evict(String key) => _cache.remove(key);
 
   @override
   Future<ByteData> load(String key) async {
-    if (_enableBinaryCache && _cache.containsKey(key)) {
-      return _cache[key];
-    }
-    try {
-      File file = File(_path + key);
-      var value = await file.readAsBytes();
-      var bd = value.buffer.asByteData();
-      if (_enableBinaryCache) {
-        _cache[key] = bd;
+    dynamic result = _cache[key];
+    if (result == null) {
+      final file = File(pathPkg.join(path, key));
+      final value = await file.readAsBytes();
+      result = value.buffer.asByteData();
+      if (enableBinaryCache) {
+        _cache[key] = result;
       }
-      return bd;
-    } catch (err, stack) {
-      throw err;
     }
+    return result;
   }
 
   @override
   Future<String> loadString(String key, {bool cache = true}) async {
-    if (cache && _cache.containsKey(key)) {
-      return _cache[key];
+    dynamic result = cache ? _cache[key] : null;
+
+    final file = File(pathPkg.join(path, key));
+    result = await file.readAsString();
+    if (cache) {
+      _cache[key] = result;
     }
 
-    try {
-      File file = File(_path + key);
-      var value = await file.readAsString();
-      if (cache) {
-        _cache[key] = value;
+    return result;
+  }
+
+  void _addJsonEntry(Map<String, List<String>> manifest, String key, String value) {
+    final arr = manifest.putIfAbsent(key, () => <String>[]);
+    arr.add(value);
+  }
+
+  Future<T> _handleAssetManifest<T>(Future<T> Function(String value) parser) async {
+    //generate this file based on folder structure
+    final dir = Directory(path);
+    final manifest = <String, List<String>>{};
+    dir.listSync(recursive: true).forEach((f) {
+      if (f is Directory) {
+        //TODO: Implement?
+      } else if (f is File) {
+        final key = pathPkg.basename(f.path);
+        final value = pathPkg.relative(pathPkg.dirname(f.path), from: path);
+        _addJsonEntry(manifest, key, pathPkg.join(value, key));
       }
-      return value;
-    } catch (err, stack) {
-      throw err;
-    }
+    });
+    return parser(json.encode(manifest));
   }
 
   @override
-  Future<T> loadStructuredData<T>(
-      String key, Future<T> Function(String value) parser) async {
+  Future<T> loadStructuredData<T>(String key, Future<T> Function(String value) parser) async {
+    T? result;
     if (key == 'AssetManifest.json') {
       //generate this file based on folder structure
-      Directory dir = Directory(_path);
-      var manifest = <String, dynamic>{};
-      void addJsonEntry(String key, String value) {
-        var arr = <String>[];
-        if (!manifest.containsKey(key)) {
-          manifest[key] = arr;
-        }
-        arr.add(value);
+      result = await _handleAssetManifest(parser);
+    } else {
+      final file = File(pathPkg.join(path, key));
+      final value = await file.readAsString();
+      result = await parser(value);
+      if (enableBinaryCache) {
+        _cache[key] = result;
       }
-
-      dir.listSync(recursive: true).forEach((f) {
-        if (f is Directory) {
-        } else if (f is File) {
-          var p = f.path;
-          var key = path.basename(p);
-          var value = path.relative(path.dirname(p), from: _path) + '/$key';
-          addJsonEntry(key, value);
-        }
-      });
-      return parser(json.encode(manifest));
     }
-    if (_enableBinaryCache && _cache.containsKey(key)) {
-      return _cache[key];
-    }
-
-    try {
-      File file = File(_path + key);
-      var value = await file.readAsString();
-      var parsed = await parser(value);
-      if (_enableBinaryCache) {
-        _cache[key] = parsed;
-      }
-      return parsed;
-    } catch (err, stack) {
-      throw err;
-    }
+    return result!;
   }
 
   @override
-  void clear() {
-    _cache.clear();
+  void clear() => _cache.clear();
+
+  @override
+  Future<ImmutableBuffer> loadBuffer(String key) {
+    // TODO: implement loadBuffer
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<T> loadStructuredBinaryData<T>(String key, FutureOr<T> Function(ByteData data) parser) {
+    // TODO: implement loadStructuredBinaryData
+    throw UnimplementedError();
   }
 }
