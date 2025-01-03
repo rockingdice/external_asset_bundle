@@ -1,5 +1,6 @@
 library external_asset_bundle;
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -61,8 +62,7 @@ class ExternalAssetBundle implements AssetBundle {
   }
 
   @override
-  Future<T> loadStructuredData<T>(
-      String key, Future<T> Function(String value) parser) async {
+  Future<T> loadStructuredData<T>(String key, Future<T> Function(String value) parser) async {
     if (key == 'AssetManifest.json') {
       //generate this file based on folder structure
       Directory dir = Directory(_path);
@@ -98,7 +98,45 @@ class ExternalAssetBundle implements AssetBundle {
         _cache[key] = parsed;
       }
       return parsed;
-    } catch (err, stack) {
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  @override
+  Future<ImmutableBuffer> loadBuffer(String key) async {
+    if (_enableBinaryCache && _cache.containsKey(key)) {
+      return _cache[key];
+    }
+
+    try {
+      File file = File(_path + key);
+      var value = await file.readAsBytes();
+      var data = ImmutableBuffer.fromUint8List(Uint8List.sublistView(value));
+      if (_enableBinaryCache) {
+        _cache[key] = data;
+      }
+      return data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  @override
+  Future<T> loadStructuredBinaryData<T>(String key, FutureOr<T> Function(ByteData data) parser) async {
+    if (_enableBinaryCache && _cache.containsKey(key)) {
+      return _cache[key];
+    }
+
+    try {
+      File file = File(_path + key);
+      var value = await file.readAsBytes();
+      var parsed = await parser(ByteData.view(value.buffer));
+      if (_enableBinaryCache) {
+        _cache[key] = parsed;
+      }
+      return parsed;
+    } catch (err) {
       throw err;
     }
   }
