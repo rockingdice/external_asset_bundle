@@ -1,11 +1,12 @@
 {
-    "workbench.colorCustomizations": {
-        "[Tomorrow Night Blue]": {
-            "tab.activeBackground": "#327be9",
-            "tab.inactiveBackground": "#0000ff"
-        },
-        "activityBar.background": "#5A120E",
-        "titleBar.activeBackground": "#7F1913",
-        "titleBar.activeForeground": "#FEFCFC"
-    }
+  "workbench.colorCustomizations": {
+    "[Tomorrow Night Blue]": {
+      "tab.activeBackground": "#327be9",
+      "tab.inactiveBackground": "#0000ff"
+    },
+    "activityBar.background": "#5A120E",
+    "titleBar.activeBackground": "#7F1913",
+    "titleBar.activeForeground": "#FEFCFC"
+  },
+  "dart.flutterSdkPath": ".fvm/versions/3.10.5"
 }

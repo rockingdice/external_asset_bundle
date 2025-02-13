@@ -38,7 +38,7 @@ class ExternalAssetBundle implements AssetBundle {
         _cache[key] = bd;
       }
       return bd;
-    } catch (err, stack) {
+    } catch (err) {
       throw err;
     }
   }
@@ -56,7 +56,7 @@ class ExternalAssetBundle implements AssetBundle {
         _cache[key] = value;
       }
       return value;
-    } catch (err, stack) {
+    } catch (err) {
       throw err;
     }
   }
@@ -124,6 +124,65 @@ class ExternalAssetBundle implements AssetBundle {
 
   @override
   Future<T> loadStructuredBinaryData<T>(String key, FutureOr<T> Function(ByteData data) parser) async {
+    if (key == 'AssetManifest.bin') {
+      //generate this file based on folder structure
+      Directory dir = Directory(_path);
+      var manifest = <String, List<Map<String, dynamic>>>{};
+      void addJsonEntry(String key, String path, {double? dpr}) {
+        var arr = <Map<String, dynamic>>[];
+        if (!manifest.containsKey(key)) {
+          manifest[key] = arr;
+        } else {
+          arr = manifest[key]!;
+        }
+        var obj = <String, dynamic>{'asset': path};
+
+        if (dpr != null) {
+          obj['dpr'] = dpr;
+        }
+        arr.add(obj);
+      }
+
+      // var bundle_root_path = _path;
+      dir.listSync(recursive: true).forEach((f) {
+        if (f is Directory) {
+        } else if (f is File) {
+          var p = f.path;
+          // var key = path.basename(p);
+          var value = path.relative(p, from: _path);
+
+          var p_dir = path.dirname(p);
+          if (p_dir.endsWith('x')) {
+            var dirname = path.basename(p_dir);
+            var parsed_dpi = double.tryParse(dirname.substring(0, dirname.length - 1));
+            if (parsed_dpi != null) {
+              //可能是个dpi，查找对应文件是否存在
+              var base_filepath = path.normalize(path.dirname(p_dir) + '/' + path.basename(p));
+              if (File(base_filepath).existsSync()) {
+                //dpi. 记录到对应条目上
+                var base_key = path.relative(base_filepath, from: _path);
+                addJsonEntry(base_key, value, dpr: parsed_dpi);
+                return;
+              }
+            }
+          }
+
+          addJsonEntry(value, value);
+        }
+      });
+      var out = await const StandardMessageCodec().encodeMessage(manifest);
+      // const StandardMessageCodec().encodeMessage(message)
+      // final decoded = const StandardMessageCodec()
+      // .decodeMessage(ByteData.sublistView(manifest));
+      // final assets = decoded.keys.cast<String>().toList();
+
+      // final jsonString = json.encode(manifest);
+      // var bytes = utf8.encode(jsonString);
+
+      // final byteData = utf8.encode(o);
+      // return parser(Uint8List.fromList(bytes).buffer.asByteData(0, bytes.length));
+      return parser(out!);
+    }
     if (_enableBinaryCache && _cache.containsKey(key)) {
       return _cache[key];
     }
